@@ -303,16 +303,40 @@ urlpatterns = [
 
 Run: `rm dashboard/tests.py && mkdir -p dashboard/tests && touch dashboard/tests/__init__.py`
 
-- [ ] **Step 6: Verify the project still boots**
+- [ ] **Step 6: Add placeholder view functions**
+
+Django's `path()` resolves its view argument at import time, so
+`dashboard/urls.py` (Step 4) fails to import until `views.dashboard`,
+`views.run_command`, and `views.config_view` exist. Replace
+`dashboard/views.py`'s generated content with minimal stubs (Tasks 6-8
+replace these with real implementations):
+
+```python
+from django.http import HttpResponse
+
+
+def dashboard(request):
+    return HttpResponse(status=501)
+
+
+def run_command(request, device_id, command_id):
+    return HttpResponse(status=501)
+
+
+def config_view(request):
+    return HttpResponse(status=501)
+```
+
+- [ ] **Step 7: Verify the project still boots**
 
 Run: `python manage.py check`
 Expected: `System check identified no issues (0 silenced).`
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add dashboard adbdash/settings.py adbdash/urls.py
-git commit -m "Add dashboard app skeleton"
+git commit -m "Add dashboard app skeleton with placeholder views"
 ```
 
 ---
