@@ -189,3 +189,27 @@ class ConfigViewTests(TestCase):
 
         self.assertRedirects(response, reverse("config"))
         mock_unassign.assert_called_once_with("d1", "c1")
+
+    @patch("dashboard.views.config_store.load", return_value={"devices": [], "commands": []})
+    def test_config_post_add_device_invalid_port_redirects_without_error(self, mock_load):
+        response = self.client.post(reverse("config"), {
+            "action": "add_device",
+            "name": "Wohnzimmer",
+            "ip": "192.168.1.50",
+            "port": "not-a-number",
+        })
+
+        self.assertRedirects(response, reverse("config"))
+
+    @patch("dashboard.views.config_store.update_device", side_effect=KeyError("d1"))
+    @patch("dashboard.views.config_store.load", return_value={"devices": [], "commands": []})
+    def test_config_post_update_device_unknown_id_redirects_without_error(self, mock_load, mock_update_device):
+        response = self.client.post(reverse("config"), {
+            "action": "update_device",
+            "device_id": "d1",
+            "name": "Schlafzimmer",
+            "ip": "192.168.1.51",
+            "port": "5556",
+        })
+
+        self.assertRedirects(response, reverse("config"))
