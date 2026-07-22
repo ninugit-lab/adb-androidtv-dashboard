@@ -28,3 +28,27 @@ Voraussetzung: Ein laufender `adb`-Server auf dem Host (`adb start-server`),
 erreichbar unter `127.0.0.1:5037`, sowie Netzwerkzugriff auf die
 AndroidTV-Geräte (ADB-Debugging über Netzwerk muss auf den Geräten aktiviert
 sein).
+
+**Wichtig:** `pure-python-adb` verbindet sich nur zu einem bereits laufenden
+`adb`-Server, startet ihn aber nicht selbst. Auf jedem neuen Host, von dem
+aus die App läuft, muss `adb` installiert sein und mindestens einmal
+`adb start-server` ausgeführt worden sein. Zusätzlich muss jedes AndroidTV-
+Gerät die ADB-Verbindung vom jeweiligen Host autorisieren (Debugging-
+Freigabe-Dialog auf dem Fernseher, host-spezifisch — ein neuer Laptop
+braucht eine eigene Freigabe, auch wenn ein anderer Rechner bereits
+verbunden war). Ohne laufenden `adb`-Server bzw. ohne Autorisierung zeigt
+das Dashboard alle Geräte als "Offline" an, unabhängig vom Inhalt der
+`config.json`.
+
+### adb-Server unter Windows automatisch beim Login starten
+
+Damit der `adb`-Server nicht nach jedem Neustart manuell gestartet werden
+muss:
+
+```bat
+scripts\install-adb-autostart.bat
+```
+
+Legt eine Aufgabe in der Windows-Aufgabenplanung an, die `adb start-server`
+bei jeder Anmeldung ausführt (Voraussetzung: `adb` ist im `PATH`). Danach
+läuft der `adb`-Server automatisch, bevor das Dashboard gestartet wird.
