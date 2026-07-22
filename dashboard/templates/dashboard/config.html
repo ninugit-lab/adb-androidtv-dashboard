@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Konfiguration – AndroidTV Dashboard</title>
+  <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+  <header>
+    <h1>Konfiguration</h1>
+    <a href="{% url 'dashboard' %}">Zurück zum Dashboard</a>
+  </header>
+
+  <main>
+    <section>
+      <h2>Geräte</h2>
+      <ul>
+        {% for device in devices %}
+          <li>
+            <form method="post" style="display:inline-flex; gap:0.5rem; align-items:center">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_device">
+              <input type="hidden" name="device_id" value="{{ device.id }}">
+              <input type="text" name="name" value="{{ device.name }}" required>
+              <input type="text" name="ip" value="{{ device.ip }}" required>
+              <input type="number" name="port" value="{{ device.port }}" required>
+              <button type="submit">Speichern</button>
+            </form>
+            <form method="post" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_device">
+              <input type="hidden" name="device_id" value="{{ device.id }}">
+              <button type="submit">Löschen</button>
+            </form>
+            <details>
+              <summary>Commands zuweisen</summary>
+              {% for command in commands %}
+                <form method="post" style="display:inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="device_id" value="{{ device.id }}">
+                  <input type="hidden" name="command_id" value="{{ command.id }}">
+                  {% if command.id in device.command_ids %}
+                    <input type="hidden" name="action" value="unassign_command">
+                    <button type="submit">✓ {{ command.name }}</button>
+                  {% else %}
+                    <input type="hidden" name="action" value="assign_command">
+                    <button type="submit">+ {{ command.name }}</button>
+                  {% endif %}
+                </form>
+              {% endfor %}
+            </details>
+          </li>
+        {% empty %}
+          <li>Keine Geräte konfiguriert.</li>
+        {% endfor %}
+      </ul>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_device">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="ip" placeholder="IP-Adresse" required>
+        <input type="number" name="port" placeholder="Port" value="5555" required>
+        <button type="submit">Gerät hinzufügen</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Commands</h2>
+      <ul>
+        {% for command in commands %}
+          <li>
+            <form method="post" style="display:inline-flex; gap:0.5rem; align-items:center">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_command">
+              <input type="hidden" name="command_id" value="{{ command.id }}">
+              <input type="text" name="name" value="{{ command.name }}" required>
+              <input type="text" name="cmd" value="{{ command.cmd }}" required>
+              <button type="submit">Speichern</button>
+            </form>
+            <form method="post" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_command">
+              <input type="hidden" name="command_id" value="{{ command.id }}">
+              <button type="submit">Löschen</button>
+            </form>
+          </li>
+        {% empty %}
+          <li>Keine Commands konfiguriert.</li>
+        {% endfor %}
+      </ul>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_command">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="cmd" placeholder="adb shell Befehl" required>
+        <button type="submit">Command hinzufügen</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,5 +1,5 @@
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from . import adb_client, config_store
@@ -27,4 +27,49 @@ def run_command(request, device_id, command_id):
 
 
 def config_view(request):
-    return HttpResponse(status=501)
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "add_device":
+            config_store.add_device(
+                request.POST.get("name", "").strip(),
+                request.POST.get("ip", "").strip(),
+                int(request.POST.get("port", 5555)),
+            )
+        elif action == "update_device":
+            config_store.update_device(
+                request.POST.get("device_id"),
+                request.POST.get("name", "").strip(),
+                request.POST.get("ip", "").strip(),
+                int(request.POST.get("port", 5555)),
+            )
+        elif action == "delete_device":
+            config_store.delete_device(request.POST.get("device_id"))
+        elif action == "add_command":
+            config_store.add_command(
+                request.POST.get("name", "").strip(),
+                request.POST.get("cmd", "").strip(),
+            )
+        elif action == "update_command":
+            config_store.update_command(
+                request.POST.get("command_id"),
+                request.POST.get("name", "").strip(),
+                request.POST.get("cmd", "").strip(),
+            )
+        elif action == "delete_command":
+            config_store.delete_command(request.POST.get("command_id"))
+        elif action == "assign_command":
+            config_store.assign_command(
+                request.POST.get("device_id"), request.POST.get("command_id")
+            )
+        elif action == "unassign_command":
+            config_store.unassign_command(
+                request.POST.get("device_id"), request.POST.get("command_id")
+            )
+        return redirect("config")
+
+    data = config_store.load()
+    return render(
+        request,
+        "dashboard/config.html",
+        {"devices": data["devices"], "commands": data["commands"]},
+    )
