@@ -5,8 +5,15 @@ im lokalen Netzwerk.
 
 ## Setup (kein venv, alle Pakete projekt-lokal)
 
+**Linux/macOS:**
 ```bash
 ./setup.sh
+python manage.py runserver
+```
+
+**Windows:**
+```bat
+setup.bat
 python manage.py runserver
 ```
 
