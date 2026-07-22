@@ -46,3 +46,33 @@ class DashboardViewTests(TestCase):
         response = self.client.get(reverse("dashboard"))
 
         self.assertContains(response, "Keine Geräte konfiguriert")
+
+
+class RunCommandViewTests(TestCase):
+    @patch("dashboard.views.adb_client.run_command")
+    @patch("dashboard.views.config_store.get_command")
+    @patch("dashboard.views.config_store.get_device")
+    def test_run_command_success(self, mock_get_device, mock_get_command, mock_run_command):
+        mock_get_device.return_value = {"id": "d1", "ip": "192.168.1.50", "port": 5555}
+        mock_get_command.return_value = {"id": "c1", "cmd": "echo netflix"}
+        mock_run_command.return_value = {"ok": True, "output": "netflix\n", "error": None}
+
+        response = self.client.post(reverse("run_command", args=["d1", "c1"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"ok": True, "output": "netflix\n", "error": None})
+        mock_run_command.assert_called_once_with("192.168.1.50", 5555, "echo netflix")
+
+    @patch("dashboard.views.config_store.get_command")
+    @patch("dashboard.views.config_store.get_device")
+    def test_run_command_unknown_device_returns_404(self, mock_get_device, mock_get_command):
+        mock_get_device.return_value = None
+        mock_get_command.return_value = {"id": "c1", "cmd": "echo netflix"}
+
+        response = self.client.post(reverse("run_command", args=["d1", "c1"]))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_run_command_rejects_get(self):
+        response = self.client.get(reverse("run_command", args=["d1", "c1"]))
+        self.assertEqual(response.status_code, 405)

@@ -1,5 +1,6 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
 from . import adb_client, config_store
 
@@ -15,8 +16,14 @@ def dashboard(request):
     return render(request, "dashboard/index.html", {"devices": devices})
 
 
+@require_POST
 def run_command(request, device_id, command_id):
-    return HttpResponse(status=501)
+    device = config_store.get_device(device_id)
+    command = config_store.get_command(command_id)
+    if device is None or command is None:
+        return JsonResponse({"ok": False, "error": "Unbekanntes Gerät oder Command"}, status=404)
+    result = adb_client.run_command(device["ip"], device["port"], command["cmd"])
+    return JsonResponse(result)
 
 
 def config_view(request):
