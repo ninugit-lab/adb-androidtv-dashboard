@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>AndroidTV Dashboard</title>
+  <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+  <header>
+    <h1>AndroidTV Dashboard</h1>
+    <a href="{% url 'config' %}">Konfiguration</a>
+  </header>
+
+  <main class="device-grid">
+    {% for device in devices %}
+      <section class="device-card" data-device-id="{{ device.id }}">
+        <h2>
+          {{ device.name }}
+          {% if device.online %}
+            <span class="status status-online">Online</span>
+          {% else %}
+            <span class="status status-offline">Offline</span>
+          {% endif %}
+        </h2>
+        <p class="device-address">{{ device.ip }}:{{ device.port }}</p>
+        <div class="command-buttons">
+          {% for command in device.commands %}
+            <button
+              type="button"
+              class="command-button"
+              data-device-id="{{ device.id }}"
+              data-command-id="{{ command.id }}">
+              {{ command.name }}
+            </button>
+          {% empty %}
+            <p class="empty">Keine Commands zugewiesen.</p>
+          {% endfor %}
+        </div>
+        <p class="result" data-result-for="{{ device.id }}"></p>
+      </section>
+    {% empty %}
+      <p>Keine Geräte konfiguriert. <a href="{% url 'config' %}">Jetzt anlegen</a>.</p>
+    {% endfor %}
+  </main>
+
+  {% csrf_token %}
+  <script>
+    const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+
+    document.querySelectorAll('.command-button').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const deviceId = button.dataset.deviceId;
+        const commandId = button.dataset.commandId;
+        const resultEl = document.querySelector('[data-result-for="' + deviceId + '"]');
+        resultEl.textContent = 'Wird gesendet…';
+
+        fetch('/device/' + deviceId + '/run/' + commandId + '/', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrfToken },
+        })
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            resultEl.textContent = data.ok
+              ? 'OK: ' + (data.output || '')
+              : 'Fehler: ' + data.error;
+          })
+          .catch(function () {
+            resultEl.textContent = 'Fehler: Anfrage fehlgeschlagen';
+          });
+      });
+    });
+  </script>
+</body>
+</html>
