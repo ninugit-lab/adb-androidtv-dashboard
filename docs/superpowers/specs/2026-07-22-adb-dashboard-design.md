@@ -22,6 +22,16 @@ als Schnellauswahl-Buttons.
 Feature), `pure-python-adb` (`ppadb`) für die ADB-Kommunikation, Vanilla
 JS/Fetch für AJAX (kein Frontend-Framework nötig).
 
+**Paket-Setup (standalone, ohne venv):** Alle Python-Abhängigkeiten (Django,
+pure-python-adb) werden per `pip install --target=./vendor -r requirements.txt`
+projekt-lokal in einen `vendor/`-Ordner installiert statt in ein virtualenv
+oder system-weit. `manage.py` fügt `vendor/` am Anfang von `sys.path` ein,
+bevor Django importiert wird, damit das Projekt ohne Aktivierungsschritt
+läuft (`python manage.py runserver` funktioniert direkt nach dem Kopieren
+des Ordners plus einmaligem Ausführen des Install-Befehls). Ein kurzes
+Setup-Skript (`setup.sh` bzw. Hinweis in der README) kapselt den
+`pip install --target=./vendor`-Aufruf.
+
 **Views/Routen:**
 
 - `GET /` – Dashboard. Zeigt pro Gerät eine Karte mit Name, Online/Offline-
